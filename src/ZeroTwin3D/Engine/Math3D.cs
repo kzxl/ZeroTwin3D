@@ -49,6 +49,9 @@ namespace ZeroTwin3D.Engine
 
         public static float Distance(Vec3 a, Vec3 b) => (a - b).Length();
 
+        public static implicit operator Zero3D.Math.Vec3(Vec3 v) => new Zero3D.Math.Vec3(v.X, v.Y, v.Z);
+        public static implicit operator Vec3(Zero3D.Math.Vec3 v) => new Vec3(v.X, v.Y, v.Z);
+
         public override string ToString() => $"({X:F3}, {Y:F3}, {Z:F3})";
     }
 
@@ -64,6 +67,9 @@ namespace ZeroTwin3D.Engine
         }
 
         public static Vec2 Zero => new Vec2(0f, 0f);
+
+        public static implicit operator Zero3D.Math.Vec2(Vec2 v) => new Zero3D.Math.Vec2(v.U, v.V);
+        public static implicit operator Vec2(Zero3D.Math.Vec2 v) => new Vec2(v.U, v.V);
     }
 
     public struct Mat4
@@ -245,6 +251,22 @@ namespace ZeroTwin3D.Engine
         }
 
         public Vec3 Translation => new Vec3(M41, M42, M43);
+
+        public static implicit operator Zero3D.Math.Mat4(Mat4 m) => new Zero3D.Math.Mat4
+        {
+            M11 = m.M11, M12 = m.M12, M13 = m.M13, M14 = m.M14,
+            M21 = m.M21, M22 = m.M22, M23 = m.M23, M24 = m.M24,
+            M31 = m.M31, M32 = m.M32, M33 = m.M33, M34 = m.M34,
+            M41 = m.M41, M42 = m.M42, M43 = m.M43, M44 = m.M44
+        };
+
+        public static implicit operator Mat4(Zero3D.Math.Mat4 m) => new Mat4
+        {
+            M11 = m.M11, M12 = m.M12, M13 = m.M13, M14 = m.M14,
+            M21 = m.M21, M22 = m.M22, M23 = m.M23, M24 = m.M24,
+            M31 = m.M31, M32 = m.M32, M33 = m.M33, M34 = m.M34,
+            M41 = m.M41, M42 = m.M42, M43 = m.M43, M44 = m.M44
+        };
     }
 
     public struct Plane3D
@@ -275,6 +297,9 @@ namespace ZeroTwin3D.Engine
         }
 
         public float DistanceToPoint(Vec3 p) => Vec3.Dot(Normal, p) + D;
+
+        public static implicit operator Zero3D.Math.Plane3D(Plane3D p) => new Zero3D.Math.Plane3D(p.Normal, p.D);
+        public static implicit operator Plane3D(Zero3D.Math.Plane3D p) => new Plane3D(p.Normal, p.D);
     }
 
     public struct Aabb3D
@@ -304,6 +329,9 @@ namespace ZeroTwin3D.Engine
                    (point.Y >= Min.Y && point.Y <= Max.Y) &&
                    (point.Z >= Min.Z && point.Z <= Max.Z);
         }
+
+        public static implicit operator Zero3D.Math.Aabb3D(Aabb3D a) => new Zero3D.Math.Aabb3D(a.Min, a.Max);
+        public static implicit operator Aabb3D(Zero3D.Math.Aabb3D a) => new Aabb3D(a.Min, a.Max);
     }
 
     public struct Vertex3D
@@ -355,137 +383,35 @@ namespace ZeroTwin3D.Engine
         }
 
         /// <summary>
-        /// Parses a Wavefront OBJ ASCII file content into a Mesh3D.
+        /// Parses a Wavefront OBJ ASCII file content into a Mesh3D by delegating to Zero3D.IO.ObjLoader.
         /// </summary>
         public static Mesh3D ParseObj(string objText)
         {
+            var m = Zero3D.IO.ObjLoader.LoadMesh(objText);
             var mesh = new Mesh3D();
-            var positions = new List<Vec3>();
-            var normals = new List<Vec3>();
-            var uvs = new List<Vec2>();
-
-            using (var reader = new StringReader(objText))
+            for (int i = 0; i < m.Vertices.Count; i++)
             {
-                string? line;
-                while ((line = reader.ReadLine()) != null)
-                {
-                    line = line.Trim();
-                    if (line.Length == 0 || line.StartsWith("#")) continue;
-
-                    string[] parts = line.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
-                    if (parts.Length < 2) continue;
-
-                    switch (parts[0])
-                    {
-                        case "v" when parts.Length >= 4:
-                            positions.Add(new Vec3(
-                                float.Parse(parts[1], CultureInfo.InvariantCulture),
-                                float.Parse(parts[2], CultureInfo.InvariantCulture),
-                                float.Parse(parts[3], CultureInfo.InvariantCulture)
-                            ));
-                            break;
-
-                        case "vn" when parts.Length >= 4:
-                            normals.Add(new Vec3(
-                                float.Parse(parts[1], CultureInfo.InvariantCulture),
-                                float.Parse(parts[2], CultureInfo.InvariantCulture),
-                                float.Parse(parts[3], CultureInfo.InvariantCulture)
-                            ));
-                            break;
-
-                        case "vt" when parts.Length >= 3:
-                            uvs.Add(new Vec2(
-                                float.Parse(parts[1], CultureInfo.InvariantCulture),
-                                float.Parse(parts[2], CultureInfo.InvariantCulture)
-                            ));
-                            break;
-
-                        case "f" when parts.Length >= 4:
-                            // Face vertices (at least 3)
-                            int firstIdx = AddFaceVertex(mesh, parts[1], positions, normals, uvs);
-                            int prevIdx = AddFaceVertex(mesh, parts[2], positions, normals, uvs);
-
-                            for (int i = 3; i < parts.Length; i++)
-                            {
-                                int currIdx = AddFaceVertex(mesh, parts[i], positions, normals, uvs);
-                                mesh.Indices.Add(firstIdx);
-                                mesh.Indices.Add(prevIdx);
-                                mesh.Indices.Add(currIdx);
-                                prevIdx = currIdx;
-                            }
-                            break;
-                    }
-                }
+                var v = m.Vertices[i];
+                mesh.Vertices.Add(new Vertex3D(v.Position, v.Normal, v.Uv));
             }
-
+            mesh.Indices.AddRange(m.Indices);
             mesh.ComputeBounds();
             return mesh;
         }
 
-        private static int AddFaceVertex(Mesh3D mesh, string faceToken, List<Vec3> positions, List<Vec3> normals, List<Vec2> uvs)
-        {
-            string[] sub = faceToken.Split('/');
-            int pIdx = int.Parse(sub[0]) - 1;
-            Vec3 pos = (pIdx >= 0 && pIdx < positions.Count) ? positions[pIdx] : Vec3.Zero;
-
-            Vec2 uv = Vec2.Zero;
-            if (sub.Length > 1 && !string.IsNullOrEmpty(sub[1]))
-            {
-                int uvIdx = int.Parse(sub[1]) - 1;
-                if (uvIdx >= 0 && uvIdx < uvs.Count) uv = uvs[uvIdx];
-            }
-
-            Vec3 norm = Vec3.UnitY;
-            if (sub.Length > 2 && !string.IsNullOrEmpty(sub[2]))
-            {
-                int nIdx = int.Parse(sub[2]) - 1;
-                if (nIdx >= 0 && nIdx < normals.Count) norm = normals[nIdx];
-            }
-
-            mesh.Vertices.Add(new Vertex3D(pos, norm, uv));
-            return mesh.Vertices.Count - 1;
-        }
-
         /// <summary>
-        /// Parses an STL binary byte stream into a Mesh3D.
+        /// Parses an STL binary byte stream into a Mesh3D by delegating to Zero3D.IO.StlLoader.
         /// </summary>
         public static Mesh3D ParseBinaryStl(byte[] stlBytes)
         {
-            if (stlBytes.Length < 84) throw new InvalidDataException("Invalid binary STL size");
-
+            var m = Zero3D.IO.StlLoader.LoadBinary(stlBytes);
             var mesh = new Mesh3D();
-            using (var ms = new MemoryStream(stlBytes))
-            using (var reader = new BinaryReader(ms))
+            for (int i = 0; i < m.Vertices.Count; i++)
             {
-                reader.ReadBytes(80); // 80-byte header
-                uint numTriangles = reader.ReadUInt32();
-
-                for (uint i = 0; i < numTriangles; i++)
-                {
-                    if (ms.Position + 50 > ms.Length) break;
-
-                    float nx = reader.ReadSingle();
-                    float ny = reader.ReadSingle();
-                    float nz = reader.ReadSingle();
-                    var normal = new Vec3(nx, ny, nz);
-
-                    var v1 = new Vec3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
-                    var v2 = new Vec3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
-                    var v3 = new Vec3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
-
-                    reader.ReadUInt16(); // Attribute byte count
-
-                    int idx = mesh.Vertices.Count;
-                    mesh.Vertices.Add(new Vertex3D(v1, normal, default));
-                    mesh.Vertices.Add(new Vertex3D(v2, normal, default));
-                    mesh.Vertices.Add(new Vertex3D(v3, normal, default));
-
-                    mesh.Indices.Add(idx);
-                    mesh.Indices.Add(idx + 1);
-                    mesh.Indices.Add(idx + 2);
-                }
+                var v = m.Vertices[i];
+                mesh.Vertices.Add(new Vertex3D(v.Position, v.Normal, v.Uv));
             }
-
+            mesh.Indices.AddRange(m.Indices);
             mesh.ComputeBounds();
             return mesh;
         }
