@@ -128,6 +128,34 @@ namespace ZeroTwin3D.Engine
             return m;
         }
 
+        public static Mat4 CreateFromQuaternion(float x, float y, float z, float w)
+        {
+            float xx = x * x;
+            float yy = y * y;
+            float zz = z * z;
+            float xy = x * y;
+            float xz = x * z;
+            float yz = y * z;
+            float wx = w * x;
+            float wy = w * y;
+            float wz = w * z;
+
+            var m = Identity;
+            m.M11 = 1f - 2f * (yy + zz);
+            m.M12 = 2f * (xy + wz);
+            m.M13 = 2f * (xz - wy);
+
+            m.M21 = 2f * (xy - wz);
+            m.M22 = 1f - 2f * (xx + zz);
+            m.M23 = 2f * (yz + wx);
+
+            m.M31 = 2f * (xz + wy);
+            m.M32 = 2f * (yz - wx);
+            m.M33 = 1f - 2f * (xx + yy);
+
+            return m;
+        }
+
         public static Mat4 operator *(Mat4 a, Mat4 b)
         {
             return new Mat4
