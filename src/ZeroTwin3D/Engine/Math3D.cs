@@ -152,7 +152,51 @@ namespace ZeroTwin3D.Engine
             m.M31 = 2f * (xz + wy);
             m.M32 = 2f * (yz - wx);
             m.M33 = 1f - 2f * (xx + yy);
+            return m;
+        }
 
+        public static Mat4 CreateLookAt(Vec3 eye, Vec3 target, Vec3 up)
+        {
+            var zaxis = (eye - target).Normalize();
+            var xaxis = Vec3.Cross(up, zaxis).Normalize();
+            var yaxis = Vec3.Cross(zaxis, xaxis);
+
+            var m = Identity;
+            m.M11 = xaxis.X; m.M12 = yaxis.X; m.M13 = zaxis.X; m.M14 = 0f;
+            m.M21 = xaxis.Y; m.M22 = yaxis.Y; m.M23 = zaxis.Y; m.M24 = 0f;
+            m.M31 = xaxis.Z; m.M32 = yaxis.Z; m.M33 = zaxis.Z; m.M34 = 0f;
+
+            m.M41 = -Vec3.Dot(xaxis, eye);
+            m.M42 = -Vec3.Dot(yaxis, eye);
+            m.M43 = -Vec3.Dot(zaxis, eye);
+            m.M44 = 1f;
+            return m;
+        }
+
+        public static Mat4 CreatePerspectiveFieldOfView(float fovYRad, float aspectRatio, float nearZ, float farZ)
+        {
+            if (fovYRad <= 0f || fovYRad >= Math.PI) throw new ArgumentOutOfRangeException(nameof(fovYRad));
+            if (aspectRatio <= 0f) throw new ArgumentOutOfRangeException(nameof(aspectRatio));
+            if (nearZ <= 0f || farZ <= nearZ) throw new ArgumentOutOfRangeException(nameof(nearZ));
+
+            float tanHalfFov = (float)Math.Tan(fovYRad * 0.5);
+            var m = new Mat4();
+            m.M11 = 1f / (aspectRatio * tanHalfFov);
+            m.M22 = 1f / tanHalfFov;
+            m.M33 = farZ / (nearZ - farZ);
+            m.M34 = -1f;
+            m.M43 = (nearZ * farZ) / (nearZ - farZ);
+            return m;
+        }
+
+        public static Mat4 CreateOrthographic(float width, float height, float nearZ, float farZ)
+        {
+            var m = new Mat4();
+            m.M11 = 2f / width;
+            m.M22 = 2f / height;
+            m.M33 = 1f / (nearZ - farZ);
+            m.M43 = nearZ / (nearZ - farZ);
+            m.M44 = 1f;
             return m;
         }
 
@@ -191,7 +235,46 @@ namespace ZeroTwin3D.Engine
             );
         }
 
+        public Vec3 TransformVector(Vec3 v)
+        {
+            return new Vec3(
+                v.X * M11 + v.Y * M21 + v.Z * M31,
+                v.X * M12 + v.Y * M22 + v.Z * M32,
+                v.X * M13 + v.Y * M23 + v.Z * M33
+            );
+        }
+
         public Vec3 Translation => new Vec3(M41, M42, M43);
+    }
+
+    public struct Plane3D
+    {
+        public Vec3 Normal;
+        public float D;
+
+        public Plane3D(Vec3 normal, float d)
+        {
+            Normal = normal;
+            D = d;
+        }
+
+        public Plane3D(float a, float b, float c, float d)
+        {
+            Normal = new Vec3(a, b, c);
+            D = d;
+        }
+
+        public Plane3D Normalize()
+        {
+            float len = Normal.Length();
+            if (len > 1e-6f)
+            {
+                return new Plane3D(Normal / len, D / len);
+            }
+            return this;
+        }
+
+        public float DistanceToPoint(Vec3 p) => Vec3.Dot(Normal, p) + D;
     }
 
     public struct Aabb3D

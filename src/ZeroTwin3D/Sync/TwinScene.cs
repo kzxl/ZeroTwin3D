@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using ZeroTwin3D.Camera;
 using ZeroTwin3D.Engine;
 using ZeroTwin3D.Kinematics;
+using ZeroTwin3D.Lighting;
 
 namespace ZeroTwin3D.Sync
 {
@@ -17,6 +19,9 @@ namespace ZeroTwin3D.Sync
         public TwinNode? Parent { get; internal set; }
         public List<TwinNode> Children { get; } = new List<TwinNode>();
         public Mesh3D? Mesh { get; set; }
+        public Material3D? Material { get; set; }
+        public bool IsVisible { get; set; } = true;
+        public bool CastShadow { get; set; } = true;
 
         public Aabb3D WorldBounds
         {
@@ -85,6 +90,8 @@ namespace ZeroTwin3D.Sync
     {
         public TwinNode Root { get; } = new TwinNode { Name = "Root" };
         public List<Aabb3D> SafetyZones { get; } = new List<Aabb3D>();
+        public Camera3D Camera { get; set; } = new Camera3D();
+        public List<Light3D> Lights { get; } = new List<Light3D>();
 
         public void Update()
         {
