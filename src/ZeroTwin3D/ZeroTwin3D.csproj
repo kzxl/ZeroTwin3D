@@ -8,6 +8,8 @@
     <RootNamespace>ZeroTwin3D</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <Description>Pure C# 3D Digital Twin, ROS URDF &amp; STL/OBJ CAD loader, 6-axis/SCARA kinematics DH solver, OBB SAT collision detection, and spatial safety zones for .NET.</Description>
+    <PackageTags>3d;digital-twin;robotics;kinematics;urdf;cad;stl;obj;collision-detection;obb;sat;simulation</PackageTags>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net462'">
