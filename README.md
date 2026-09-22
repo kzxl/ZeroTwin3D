@@ -3,11 +3,20 @@
 [![ZeroPlatform Tier](https://img.shields.io/badge/ZeroPlatform-Tier%204%20(Graphics%20%26%20Spatial%203D)-ea580c.svg)](https://github.com/kzxl/ZeroPlatform)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![.NET Multi-Targeting](https://img.shields.io/badge/.NET-8.0%20%7C%204.6.2%20%7C%20Standard%202.0-purple.svg)](https://dotnet.microsoft.com/)
-[![NuGet Version](https://img.shields.io/badge/NuGet-1.4.0-blue.svg)](https://www.nuget.org/packages/ZeroTwin3D)
+[![NuGet Version](https://img.shields.io/badge/NuGet-1.5.0-blue.svg)](https://www.nuget.org/packages/ZeroTwin3D)
 
 **ZeroTwin3D** is a sovereign, lightweight, pure C# 3D digital twin engine, robotic kinematics solver, collision detection pipeline, and spatial safety boundary supervisor for .NET.
 
-Part of the **ZeroUniverse / ZeroPlatform** ecosystem.
+Operating as a spatial simulation & kinematics member of **Tier 4 (Graphics & Spatial 3D)** within the **[ZeroPlatform](https://github.com/kzxl/ZeroPlatform)** ecosystem.
+
+---
+
+## 🏛️ Ecosystem Architectural Alignment
+
+- **Architectural Tier**: **Tier 4 (Graphics & Spatial 3D)**
+- **Permitted Upstream Dependencies**: Tier 0 (`ZeroPrimitives`), Tier 2 (`ZeroData`), Tier 4 (`Zero3D`, `ZeroGraphics`)
+- **Downstream Consumers**: Tier 5 (`ZeroUI`, `ZeroPipeline`)
+- **Core Guarantees**: Pure C# execution, zero unmanaged CAD DLLs, analytical kinematics, OBB SAT collision in microseconds.
 
 ---
 

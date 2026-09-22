@@ -22,20 +22,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Checkout Dependencies
-        shell: pwsh
-        run: |
-          cd ..
-          if (-not (Test-Path "Zero3D")) { git clone https://github.com/kzxl/Zero3D.git }
-          if (-not (Test-Path "ZeroPrimitives")) { git clone https://github.com/kzxl/ZeroPrimitives.git }
-          if (-not (Test-Path "ZeroData")) { git clone https://github.com/kzxl/ZeroData.git }
-          if (-not (Test-Path "ZeroGraphics")) { git clone https://github.com/kzxl/ZeroGraphics.git }
-          cd ZeroTwin3D
-
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+          source-url: https://nuget.pkg.github.com/kzxl/index.json
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Pack ZeroTwin3D
         run: dotnet pack src/ZeroTwin3D/ZeroTwin3D.csproj -c Release -o nupkgs
