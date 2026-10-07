@@ -26,6 +26,6 @@
     <PackageReference Include="ZeroPrimitives.Core" Version="1.7.0" />
     <PackageReference Include="ZeroData.Core" Version="1.5.0" />
     <PackageReference Include="ZeroGraphics.Core" Version="1.7.0" />
-    <PackageReference Include="ZeroMotion.Core" Version="1.0.0" />
+    <PackageReference Include="ZeroMotion.Core" Version="1.1.0" />
   </ItemGroup>
 </Project>
